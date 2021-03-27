@@ -23,7 +23,7 @@ public class ConnectionDB {
 		
 		try {
 			Class.forName("org.postgresql.Driver");
-			db = DriverManager.getConnection("jdbc:postgresql:/web0.eecs.uottawa.ca:15432/","adegr091","Jtx5y2gd**");
+			db = DriverManager.getConnection("jdbc:postgresql:/web0.eecs.uottawa.ca:15432/","","");
 			
 			if(db!=null) {
 				System.out.println("Connection work");
