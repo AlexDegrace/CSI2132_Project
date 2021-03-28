@@ -1,6 +1,7 @@
 
 public class HotelChain {
 	
+	public String hotel_id;
 	public String star_category;
 	public String street_number;
 	public String street_name;
@@ -8,7 +9,8 @@ public class HotelChain {
 	public String state_province;
 	public String phone_number;
 	
-	public HotelChain(String star_category,String street_number,String street_name,String city,String state_province,String phone_number) {
+	public HotelChain(String hotel_id ,String star_category,String street_number,String street_name,String city,String state_province,String phone_number) {
+		this.hotel_id = hotel_id;
 		this.star_category = star_category;
 		this.street_number = street_number;
 		this.street_name = street_name;

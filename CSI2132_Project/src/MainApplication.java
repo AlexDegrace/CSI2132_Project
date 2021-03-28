@@ -4,12 +4,11 @@ import java.util.Scanner;
 public class MainApplication {
 
     final static private String CUSTOMER_USERNAME = "customer";
-    final static private String CUSTOMER_PASSWORD = "password";
     final static private String STAFF_USERNAME = "employee";
-    final static private String STAFF_PASSWORD = "password";
     
     private static Scanner scanner = new Scanner(System.in);
     
+    //TODO: add all customers and choose which one you are
     public static void main(String[] args) {
     	
         try {
@@ -31,23 +30,21 @@ public class MainApplication {
         boolean isLogIn =false;
         int typeOfUser = 0;
         while(!isLogIn){
-            System.out.println("Enter username");
+            System.out.println("Are you a employee or customer?");
             String username = scanner.nextLine();
-            System.out.println("Enter password");
-            String password = scanner.nextLine();
 
-            if(username.equals(CUSTOMER_USERNAME) && password.equals(CUSTOMER_PASSWORD)){
+            if(username.equals(CUSTOMER_USERNAME) ){
                 typeOfUser = 1;
                 isLogIn = true;
             }
 
-            else if(username.equals(STAFF_USERNAME) && password.equals(STAFF_PASSWORD)){
+            else if(username.equals(STAFF_USERNAME) ){
                 typeOfUser = 2;
                 isLogIn = true;
             }
 
             else{
-                System.out.println("Sorry but there is no user with that username and password (Hint: Customer-> (u: customer p: password) Employee-> (u: employee p: password))");
+                System.out.println("Please enter employee or customer");
             }
         }
         return typeOfUser;
@@ -57,6 +54,9 @@ public class MainApplication {
     
     public static void handleCustomer() {
     	ConnectionDB connection = new ConnectionDB();
+    	//ArrayList<String> customers = connection.getCustomer();
+    	System.out.println("Which customer are you "); 
+    	
     	ArrayList<String> hotel_brands = connection.getHotelBrand();
         System.out.print("Choose which hotel brand you want to book in ");
     	for(int i =0; i < hotel_brands.size(); i++) {

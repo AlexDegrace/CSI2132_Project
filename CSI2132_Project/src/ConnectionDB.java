@@ -26,7 +26,7 @@ public class ConnectionDB {
 		try {
 			
 			Class.forName("org.postgresql.Driver");
-			db = DriverManager.getConnection("jdbc:postgresql://web0.eecs.uottawa.ca:15432/group_b07_g08","","");
+			db = DriverManager.getConnection("jdbc:postgresql://web0.eecs.uottawa.ca:15432/group_b07_g08","adegr091","Jtx5y2gd**");
 			
 			if(db!=null) {
 				System.out.println("Connection work");
@@ -90,14 +90,14 @@ public class ConnectionDB {
 		ArrayList<String> hotel_chain = new ArrayList<String>();
 		
         try{
-        	String query ="select star_category,street_number,street_name,city,state_province,phone_number from hotel_chain where brand_name=\'"+hotelBrand+"\'";
+        	String query ="select hotel_id,star_category,street_number,street_name,city,state_province,phone_number from hotel_chain where brand_name=\'"+hotelBrand+"\'";
        
             ps = db.prepareStatement(query);
             	               
             rs = ps.executeQuery();
 
 			while(rs.next()) {
-				HotelChain hc = new HotelChain(rs.getString(1),rs.getString(2),rs.getString(3),rs.getString(4),rs.getString(5),rs.getString(6));
+				HotelChain hc = new HotelChain(rs.getString(1),rs.getString(2),rs.getString(3),rs.getString(4),rs.getString(5),rs.getString(6),rs.getString(7));
 				hotel_chain.add(hc.toString());
 			}
             
@@ -108,5 +108,31 @@ public class ConnectionDB {
         }
 		return hotel_chain;
 	}
+	
+	//Not done
+	/*public ArrayList<String> getCustomer(){
+		getConnection();
+		
+		ArrayList<String> customers = new ArrayList<String>();
+		
+        try{
+        	String query ="select hotel_id,star_category,street_number,street_name,city,state_province,phone_number from hotel_chain where brand_name=";
+       
+            ps = db.prepareStatement(query);
+            	               
+            rs = ps.executeQuery();
+
+			while(rs.next()) {
+				
+				customers.add("Change this");
+			}
+            
+        }catch(SQLException e){
+            e.printStackTrace();
+        }finally {
+        	closeDB();
+        }
+		return customers;
+	}*/
 
 }
