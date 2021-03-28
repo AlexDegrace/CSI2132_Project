@@ -21,6 +21,7 @@ public class ConnectionDB {
 		
 	}
 	
+	//Create a connection with the database
 	public void getConnection() {
 		
 		try {
@@ -42,6 +43,7 @@ public class ConnectionDB {
 		
 	}
 	
+	//Close the connection with the database
 	public void closeDB() {
 		try {
 			if(rs != null){
@@ -61,6 +63,7 @@ public class ConnectionDB {
 		}
 	}
 	
+	//Return the name of all hotel brand name
 	public ArrayList<String> getHotelBrand() {
 		getConnection();
 		
@@ -83,14 +86,14 @@ public class ConnectionDB {
 		return hotel_brand;
 	}
 	
-	
-	public ArrayList<String> getHotelChain(String hotelBrand) {
+	//Return all hotels chains (Not all attribute but most of them) link with the hotel brand given as the parameter
+	public ArrayList<HotelChain> getHotelChain(String hotelBrand) {
 		getConnection();
 		
-		ArrayList<String> hotel_chain = new ArrayList<String>();
+		ArrayList<HotelChain> hotel_chain = new ArrayList<HotelChain>();
 		
         try{
-        	String query ="select hotel_id,star_category,street_number,street_name,city,state_province,phone_number from hotel_chain where brand_name=\'"+hotelBrand+"\'";
+        	String query ="select hotel_id,star_category,street_number,street_name,city,state_province,phone_number from hotel_chain where brand_name=\'"+hotelBrand+"\' order by hotel_id" ;
        
             ps = db.prepareStatement(query);
             	               
@@ -98,7 +101,7 @@ public class ConnectionDB {
 
 			while(rs.next()) {
 				HotelChain hc = new HotelChain(rs.getString(1),rs.getString(2),rs.getString(3),rs.getString(4),rs.getString(5),rs.getString(6),rs.getString(7));
-				hotel_chain.add(hc.toString());
+				hotel_chain.add(hc);
 			}
             
         }catch(SQLException e){
@@ -109,22 +112,23 @@ public class ConnectionDB {
 		return hotel_chain;
 	}
 	
-	//Not done
-	/*public ArrayList<String> getCustomer(){
+	
+	//Return all customers cust_id, first_name and last_name
+	public ArrayList<String> getCustomer(){
 		getConnection();
 		
 		ArrayList<String> customers = new ArrayList<String>();
 		
         try{
-        	String query ="select hotel_id,star_category,street_number,street_name,city,state_province,phone_number from hotel_chain where brand_name=";
+        	String query ="select customer_id,first_name,last_name from customer";
        
             ps = db.prepareStatement(query);
             	               
             rs = ps.executeQuery();
 
-			while(rs.next()) {
-				
-				customers.add("Change this");
+            while(rs.next()) {
+				Customer c = new Customer(rs.getString(1),rs.getString(2),rs.getString(3));
+				customers.add(c.toString());
 			}
             
         }catch(SQLException e){
@@ -133,6 +137,6 @@ public class ConnectionDB {
         	closeDB();
         }
 		return customers;
-	}*/
+	}
 
 }

@@ -21,7 +21,11 @@ public class HotelChain {
 	}
 	
 	public String toString() {
-		return "{star_category: "+ this.star_category + ", street_number: " + this.street_number + ", street_name: " + this.street_name + ", city: "+ this.city+", state_province: "+ this.state_province + ", phone_number: "+phone_number+"}";
+		return "{ hotel_id: "+hotel_id+", star_category: "+ this.star_category + ", street_number: " + this.street_number + ", street_name: " + this.street_name + ", city: "+ this.city+", state_province: "+ this.state_province + ", phone_number: "+phone_number+"}";
+	}
+	
+	public String getHotelId() {
+		return this.hotel_id;
 	}
 
 }

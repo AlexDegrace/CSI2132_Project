@@ -1,5 +1,5 @@
 
-public class room {
+public class Room {
 	
 	public String room_id;
 	public String hotel_id;
@@ -7,7 +7,7 @@ public class room {
 	public String room_capacity;
 	public Boolean is_extendable;
 	
-	public room(String room_id, String hotel_id, String price, String room_capacity, Boolean is_extendable) {
+	public Room(String room_id, String hotel_id, String price, String room_capacity, Boolean is_extendable) {
 		this.room_id=room_id;
 		this.hotel_id=hotel_id;
 		this.price=price;

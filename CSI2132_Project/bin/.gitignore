@@ -1,3 +1,15 @@
 /ConnectionDB.class
 /MainApplication.class
 /HotelChain.class
+/has_booking.class
+/has_renting.class
+/room.class
+/room_booking.class
+/room_renting.class
+/Cutomer.class
+/Customer.class
+/HasBooking.class
+/HasRenting.class
+/RoomBooking.class
+/Room.class
+/RoomRenting.class
