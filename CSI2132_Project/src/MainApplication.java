@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class MainApplication {
@@ -7,23 +8,26 @@ public class MainApplication {
     final static private String STAFF_USERNAME = "employee";
     final static private String STAFF_PASSWORD = "password";
     
+    private static Scanner scanner = new Scanner(System.in);
+    
     public static void main(String[] args) {
     	
-    	ConnectionDB connection = new ConnectionDB();
-    	connection.getConnection();
-        
-        /*int typeOfUser = getCredential();
-        System.out.println(typeOfUser);
+        try {
+        	int typeOfUser = getCredential();
+            System.out.println(typeOfUser);
 
-        //if user is a customer
-        if(typeOfUser == 1){
-            
-        }*/
+            //if user is a customer
+            if(typeOfUser == 1){
+                handleCustomer();
+            }
+        	
+        }catch(Exception e) {
+        	System.out.println(e);
+        }
     }
 
 
     public static int getCredential(){
-        Scanner scanner = new Scanner(System.in);
         boolean isLogIn =false;
         int typeOfUser = 0;
         while(!isLogIn){
@@ -37,7 +41,6 @@ public class MainApplication {
                 isLogIn = true;
             }
 
-
             else if(username.equals(STAFF_USERNAME) && password.equals(STAFF_PASSWORD)){
                 typeOfUser = 2;
                 isLogIn = true;
@@ -47,10 +50,43 @@ public class MainApplication {
                 System.out.println("Sorry but there is no user with that username and password (Hint: Customer-> (u: customer p: password) Employee-> (u: employee p: password))");
             }
         }
-        scanner.close();
         return typeOfUser;
 
 
+    }
+    
+    public static void handleCustomer() {
+    	ConnectionDB connection = new ConnectionDB();
+    	ArrayList<String> hotel_brands = connection.getHotelBrand();
+        System.out.print("Choose which hotel brand you want to book in ");
+    	for(int i =0; i < hotel_brands.size(); i++) {
+        	System.out.print(hotel_brands.get(i)+" ("+i+")"+", ");
+        }
+    
+        System.out.print(": ");
+        int selectedInt;
+        do
+        { 
+            try {
+            	String selectedHB = scanner.nextLine();
+            	selectedInt = Integer.parseInt(selectedHB);
+            	if(selectedInt<0 || selectedInt>=hotel_brands.size()) {
+            		throw new Exception();
+            	}
+                break;
+            }
+            catch (Exception e)
+            {
+                System.out.println("Please enter a valid integer");
+            }
+        }
+        while (true);
+        
+        ArrayList<String> hotel_chains = connection.getHotelChain(hotel_brands.get(selectedInt));
+        
+        for(String chain: hotel_chains) {
+        	System.out.println(chain);
+        }
     }
 
 }
