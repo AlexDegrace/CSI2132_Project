@@ -15,4 +15,8 @@ public class Customer {
 		return "{customer_id: "+ this.customer_id + ", first_name: " + this.first_name + ", last_name: " + this.last_name + " }";
 	}
 	
+	public String getCustomerId() {
+		return customer_id;
+	}
+	
 }

@@ -27,7 +27,7 @@ public class ConnectionDB {
 		try {
 			
 			Class.forName("org.postgresql.Driver");
-			db = DriverManager.getConnection("jdbc:postgresql://web0.eecs.uottawa.ca:15432/group_b07_g08","adegr091","Jtx5y2gd**");
+			db = DriverManager.getConnection("jdbc:postgresql://web0.eecs.uottawa.ca:15432/group_b07_g08","","");
 			
 			if(db!=null) {
 				System.out.println("Connection work");
@@ -38,6 +38,7 @@ public class ConnectionDB {
 		}
 		catch(Exception e) {
 			System.out.println(e);
+			closeDB();
 		}
 		
 		
@@ -138,5 +139,67 @@ public class ConnectionDB {
         }
 		return customers;
 	}
+	
+	//Get all room in the hotel that does not have a reservation between startDate and endDate
+	public ArrayList<Room> getRoomByHotelAndDate(String hotelId, String startDate, String endDate){
+		
+	
+		getConnection();
+		
+		ArrayList<Room> rooms = new ArrayList<Room>();
+		
+        try{
+        	String query ="select * from room where hotel_id = " + hotelId + " and room_id not in (select room_id from room_booking where '"+startDate+"' between start_date and end_date or '"+endDate+"' between start_date and end_date)";
+       
+            ps = db.prepareStatement(query);
+            	               
+            rs = ps.executeQuery();
+
+            while(rs.next()) {
+				Room r = new Room(rs.getString(1),rs.getString(2),rs.getString(3), rs.getString(4),rs.getString(5),rs.getString(6));
+				rooms.add(r);
+			}
+            
+        }catch(SQLException e){
+            e.printStackTrace();
+        }finally {
+        	closeDB();
+        }
+		return rooms;
+	
+	}
+	
+	
+	//Create a room_booking and a had_booking using roomId, startDate, endDate, price, custId
+	public boolean addRoomBookingAndHasBooking(String roomId, String startDate, String endDate, String price, String custId) {
+		
+		getConnection();
+		
+		boolean worked = false;
+		
+        try{
+        	String priceNoDollarsSign = price.substring(1,price.length()-1);
+
+        	String query ="INSERT INTO public.room_booking(room_id, start_date, end_date, price) VALUES ("+ roomId +", '" + startDate + "', '"+ endDate +"', "+ priceNoDollarsSign +");";
+        	st = db.createStatement();
+        	st.executeUpdate(query);
+        	
+        	query = "INSERT INTO public.has_booking(start_date, end_date, room_id, customer_id) VALUES ('" + startDate + "', '"+ endDate +"', " +roomId +", "+ custId +");";
+        	st = db.createStatement();
+        	st.executeUpdate(query);
+        	
+            worked = true;
+            
+        }catch(SQLException e){
+            e.printStackTrace();
+            worked = false;
+        }finally {
+        	closeDB();
+        }
+		return worked;
+		
+	}
+	
+	
 
 }

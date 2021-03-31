@@ -1,3 +1,7 @@
+import java.sql.Date;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -52,11 +56,24 @@ public class MainApplication {
 
     }
     
-    public static void handleCustomer() {
+    public static void handleCustomer() throws InterruptedException {
     	ConnectionDB connection = new ConnectionDB();
     	// Ask the user for its customer id
     	System.out.println("Which customer are you (choose a valid id)"); 
-    	ArrayList<String> customers = connection.getCustomer();
+    	ArrayList<String> customers;
+    	do{
+    		try {
+        		customers = connection.getCustomer();
+        		break;
+        	}
+        	catch(Exception e) {
+        		System.out.println(e);
+        		Thread.sleep(5000);
+        	}
+    	}
+    	while(true);
+    	
+    	
     	
     	// List all of the customers
     	for(String cu : customers) {
@@ -64,14 +81,14 @@ public class MainApplication {
     	}
     	
     	//This store the custId for creating booking later
-    	int custIdInt;
+    	String custId;
     	
     	do
         { 
     		// This ask the user for its customer id
             try {
-            	String custId = scanner.nextLine();
-            	custIdInt = Integer.parseInt(custId);
+            	custId = scanner.nextLine();
+            	int custIdInt = Integer.parseInt(custId);
             	if(custIdInt<1 || custIdInt>customers.size()) {
             		throw new Exception();
             	}
@@ -142,7 +159,111 @@ public class MainApplication {
         }
         while (true);
         
+        //Let the use choose a end date for there booking
+        System.out.println("Choose the start date of your booking (yyyy-mm-dd)");
+        String startDate;
         
+        do
+        { 
+            try {
+            	startDate = scanner.nextLine();
+            	//Make sure the entry is correct
+            	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
+            	dateFormat.setLenient(false);
+      
+            		
+            	java.util.Date d = dateFormat.parse(startDate);
+            	startDate = dateFormat.format(d);
+            	break;
+            	 
+            	// string contains valid date
+            	}
+  
+               
+            catch (Exception e)
+            {
+                System.out.println("Please enter a valid start date");
+            }
+        }
+        while (true);
+        
+        
+        //Let the use choose a start date for there booking
+        System.out.println("Choose the end date of your booking (yyyy-mm-dd)");
+        String endDate;
+        
+        do
+        { 
+            try {
+            	endDate = scanner.nextLine();
+            	//Make sure the entry is correct
+            	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
+            	dateFormat.setLenient(false);
+      	
+            	java.util.Date d = dateFormat.parse(endDate);
+            	endDate = dateFormat.format(d);
+            	break;
+            }
+               
+            catch (Exception e)
+            {
+                System.out.println("Please enter a valid end date");
+            }
+        }
+        while (true);
+        
+        // Query all the available rooms for the hotelId and start and end date
+        ArrayList<Room> availableRooms = connection.getRoomByHotelAndDate(selectedHotelId, startDate,endDate );
+        
+        System.out.println("Choose which room you want to book (choose a valid room id)");
+        ArrayList<Integer> availableRoomId = new ArrayList<Integer>();
+        
+        //Print all the room available and store there ids in an array list to validate id later
+        for(Room room: availableRooms) {
+        	availableRoomId.add(Integer.parseInt(room.getRoomId()));
+        	System.out.println(room);
+        }
+        
+        //Store the id of the selected room to book
+        String selectedRoomId;
+        
+        //Ask the user for the room to book
+        do
+        { 
+            try {
+            	selectedRoomId = scanner.nextLine();
+            	int selectedRoomIdInt = Integer.parseInt(selectedRoomId);
+            	//Make sure the entry is correct
+            	if(!availableRoomId.contains(selectedRoomIdInt)) {
+            		throw new Exception();
+            	}
+                break;
+            }
+            catch (Exception e)
+            {
+                System.out.println("Please enter a valid id");
+            }
+        }
+        while (true);
+        
+        //Store the room price of the selected room
+        String roomPrice = "-1";
+        for(int i =0; i < availableRooms.size(); i++) {
+        	if(availableRooms.get(i).getRoomId().equals(selectedRoomId)) {
+        		roomPrice = availableRooms.get(i).getPrice();
+        	}
+        }
+        
+        // Try to create a room_booking and a had_booking for the information collected from the user
+        boolean bookingCreated = connection.addRoomBookingAndHasBooking(selectedRoomId,startDate,endDate,roomPrice,custId);
+        
+        //Display if the insert worked or not
+        if(bookingCreated) {
+        	System.out.println("A booking has been created for room "+ selectedRoomId +" in hotel "+selectedHotelId +" from " + startDate + " to "+ endDate + " for " + roomPrice);
+        }
+        else {
+        	System.out.println("The booking could not be created please try later.");
+        }
         
     }
 
