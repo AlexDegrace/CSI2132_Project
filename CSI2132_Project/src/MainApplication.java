@@ -73,14 +73,16 @@ public class MainApplication {
         	}
         	catch(Exception e) {
         		System.out.println(e);
+        		try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
         	}
     		
-    		try {
-    			Thread.sleep(5000);
-    		}
-    		catch(InterruptedException e) {
-    			System.out.println(e);
-    		}
+
+    			
+    		
     	}
     	while(true);
     	// List all of the customers
@@ -112,9 +114,7 @@ public class MainApplication {
     }
     
     private static String askUserForHotelBrand(ConnectionDB connection) {
-    	
-    	
-    	
+    
     	ArrayList<String> hotel_brands;
     	do{
     		try {
@@ -123,15 +123,16 @@ public class MainApplication {
         	}
         	catch(Exception e) {
         		System.out.println(e);
+        		try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
         		
         	}
     		
-    		try {
-    			Thread.sleep(5000);
-    		}
-    		catch(InterruptedException e) {
-    			System.out.println(e);
-    		}
+
     	}
     	while (true);
     	
@@ -167,6 +168,54 @@ public class MainApplication {
     	
     }
     
+    private static Room askUserForRoom(ConnectionDB connection,String hotelChainId, String startDate,String endDate) {
+    	// Query all the available rooms for the hotelId and start and end date
+        ArrayList<Room> availableRooms = connection.getRoomByHotelAndDate(hotelChainId, startDate,endDate );
+        
+        System.out.println("Choose which room you want (choose a valid room id)");
+        ArrayList<Integer> availableRoomId = new ArrayList<Integer>();
+        
+        //Print all the rooms available and store their id in an array list to validate id later
+        for(Room room: availableRooms) {
+        	availableRoomId.add(Integer.parseInt(room.getRoomId()));
+        	System.out.println(room);
+        }
+        
+        //Store the id of the selected room to book
+        String selectedRoomId;
+        
+        //Ask the user for the room to book
+        do
+        { 
+            try {
+            	selectedRoomId = scanner.nextLine();
+            	int selectedRoomIdInt = Integer.parseInt(selectedRoomId);
+            	//Make sure the entry is correct
+            	if(!availableRoomId.contains(selectedRoomIdInt)) {
+            		throw new Exception();
+            	}
+                break;
+            }
+            catch (Exception e)
+            {
+                System.out.println("Please enter a valid id");
+            }
+        }
+        while (true);
+        
+        boolean found =false;
+        int currentIndex = 0;
+        Room r = null;
+        while(!found || currentIndex<availableRooms.size()) {
+        	r = availableRooms.get(currentIndex);
+        	if(selectedRoomId.equals(r.getRoomId())) {
+        		found = true;
+        	}
+        	currentIndex++;
+        } 
+        return r;
+    }
+    
     private static String askUserForHotelChain(ConnectionDB connection, String hotelBrandName) {
     	
     	ArrayList<HotelChain> hotel_chains;
@@ -178,14 +227,14 @@ public class MainApplication {
         	}
         	catch(Exception e) {
         		System.out.println(e);
+        		try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
         	}
-    		
-    		try {
-    			Thread.sleep(5000);
-    		}
-    		catch(InterruptedException e) {
-    			System.out.println(e);
-    		}
+    	
     	}
     	while(true);
     	
@@ -282,7 +331,7 @@ public class MainApplication {
     
     private static boolean askUserForPriorBooking() {
     	
-    	System.out.println("Does the customer have a prior booking?");
+    	System.out.println("Does the customer have a prior booking (yes or no)?");
         
         boolean customerHasBooking;
         String userPriorBookingInput;
@@ -313,6 +362,57 @@ public class MainApplication {
     	return customerHasBooking;
     }
     
+    private static RoomBooking askUserForRoomBooking(ConnectionDB connection, String custId) {
+    	ArrayList<RoomBooking> roomBookings;
+    	do{
+    		try {
+    			roomBookings = connection.getRoomBookingByCustomerId(custId);
+        		break;
+        	}
+        	catch(Exception e) {
+        		System.out.println(e);
+        		try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+        		
+        	}
+    		
+    	}
+    	while (true);
+    	
+    	// This let you choose the hotel brand you want to book
+        System.out.println("Choose which room booking you want to check in (use the number in parentheses)");
+    	for(int i =0; i<roomBookings.size(); i++) {
+    		RoomBooking rb = roomBookings.get(i);
+        	System.out.println("("+i+") -> " +rb.toString());
+        }
+    	
+    	// This keep the index of the Hotel Brand 
+        int selectedBookingIndex;
+        
+        do
+        { 
+            try {
+            	String stringBookingIndex = scanner.nextLine();
+            	selectedBookingIndex = Integer.parseInt(stringBookingIndex);
+            	//Make sure the entry is correct
+            	if(selectedBookingIndex<0 || selectedBookingIndex>=roomBookings.size()) {
+            		throw new Exception();
+            	}
+                break;
+            }
+            catch (Exception e)
+            {
+                System.out.println("Please enter a valid number");
+            }
+        }
+        while (true);
+        
+        return roomBookings.get(selectedBookingIndex);
+    }
     
     public static void handleCustomer() throws InterruptedException {
     	ConnectionDB connection = new ConnectionDB();
@@ -328,55 +428,17 @@ public class MainApplication {
         
         String endDate = askUserForEndDate();
         
+        Room room = askUserForRoom(connection, selectedHotelId,startDate,endDate);
         
-        // Query all the available rooms for the hotelId and start and end date
-        ArrayList<Room> availableRooms = connection.getRoomByHotelAndDate(selectedHotelId, startDate,endDate );
         
-        System.out.println("Choose which room you want to book (choose a valid room id)");
-        ArrayList<Integer> availableRoomId = new ArrayList<Integer>();
-        
-        //Print all the rooms available and store their id in an array list to validate id later
-        for(Room room: availableRooms) {
-        	availableRoomId.add(Integer.parseInt(room.getRoomId()));
-        	System.out.println(room);
-        }
-        
-        //Store the id of the selected room to book
-        String selectedRoomId;
-        
-        //Ask the user for the room to book
-        do
-        { 
-            try {
-            	selectedRoomId = scanner.nextLine();
-            	int selectedRoomIdInt = Integer.parseInt(selectedRoomId);
-            	//Make sure the entry is correct
-            	if(!availableRoomId.contains(selectedRoomIdInt)) {
-            		throw new Exception();
-            	}
-                break;
-            }
-            catch (Exception e)
-            {
-                System.out.println("Please enter a valid id");
-            }
-        }
-        while (true);
-        
-        //Store the room price of the selected room
-        String roomPrice = "-1";
-        for(int i =0; i < availableRooms.size(); i++) {
-        	if(availableRooms.get(i).getRoomId().equals(selectedRoomId)) {
-        		roomPrice = availableRooms.get(i).getPrice();
-        	}
-        }
+ 
         
         // Try to create a room_booking and a had_booking for the information collected from the user
-        boolean bookingCreated = connection.addRoomBookingAndHasBooking(selectedRoomId,startDate,endDate,roomPrice,custId);
+        boolean bookingCreated = connection.addRoomBookingAndHasBooking(room.getRoomId(),startDate,endDate,room.getPrice(),custId);
         
         //Display if the insert worked or not
         if(bookingCreated) {
-        	System.out.println("A booking has been created for room "+ selectedRoomId +" in hotel "+selectedHotelId +" from " + startDate + " to "+ endDate + " for " + roomPrice+"/day");
+        	System.out.println("A booking has been created for room "+ room.getRoomId() +" in hotel "+selectedHotelId +" from " + startDate + " to "+ endDate + " for " + room.getPrice()+"/day");
         }
         else {
         	System.out.println("The booking could not be created please try later.");
@@ -388,6 +450,7 @@ public class MainApplication {
     
     
     public static void handlerEmployee() {
+    	
     	ConnectionDB connection = new ConnectionDB();
     	
     	String hotelBrandName = askUserForHotelBrand(connection);
@@ -398,9 +461,51 @@ public class MainApplication {
         
         //If the customer has booking we need his customer if
         if(customerHasBooking) {
+        	String custId = askUserForCustomerId(connection);
+        	RoomBooking custRoomBooking = askUserForRoomBooking(connection,custId);
+        	boolean worked= false;
+        	do{
+        		try {
+        			worked = connection.addRoomRentingAndHasRentingFromRoomBooking(custRoomBooking.getRoomId(),custRoomBooking.getStartDate(),custRoomBooking.getEndDate(), custRoomBooking.getPrice(), custId);
+            		break;
+            	}
+            	catch(Exception e) {
+            		System.out.println(e);
+            		try {
+						Thread.sleep(5000);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
+            		
+            	}
+        		
+        	}
+        	while (true);
         	
+        	if(worked) {
+        		System.out.println("Check in succesful. New entry in the database for Room_Renting and had_Renting");
+        	}else {
+        		
+        	}
         }
         else {
+        	String startDate = askUserForStartDate();
+        	String endDate =  askUserForEndDate();
+        	
+        	Room room = askUserForRoom(connection, hotelChainId,startDate,endDate);
+        	String custId = askUserForCustomerId(connection);
+        	
+        	// Try to create a room_booking and a had_booking for the information collected from the user
+            boolean rentingCreated = connection.addRoomRentingAndHasRenting(room.getRoomId(),startDate,endDate,room.getPrice(),custId);
+            
+            //Display if the insert worked or not
+            if(rentingCreated) {
+            	System.out.println("A booking has been created for room "+ room.getRoomId() +" in hotel "+hotelChainId +" from " + startDate + " to "+ endDate + " for " + room.getPrice()+"/day");
+            }
+            else {
+            	System.out.println("The booking could not be created please try later.");
+            }
+        	
         	
         }
         

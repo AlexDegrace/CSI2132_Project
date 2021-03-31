@@ -1,14 +1,13 @@
-import java.sql.Date;
 
 public class RoomRenting {
 	
 	public String room_id;
-	public Date start_date;
-	public Date end_date;
+	public String start_date;
+	public String end_date;
 	public String price;
-	public Boolean was_booked;
+	public String was_booked;
 	
-	public RoomRenting(String room_id, Date start_date, Date end_date, String price,  Boolean was_booked) {
+	public RoomRenting(String room_id, String start_date, String end_date, String price,  String was_booked) {
 		this.room_id=room_id;
 		this.start_date=start_date;
 		this.end_date=end_date;
