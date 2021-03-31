@@ -9,6 +9,7 @@ public class MainApplication {
 
     final static private String CUSTOMER_USERNAME = "customer";
     final static private String STAFF_USERNAME = "employee";
+    final static private String ADMIN_USERNAME = "admin";
     
     private static Scanner scanner = new Scanner(System.in);
     
@@ -23,6 +24,12 @@ public class MainApplication {
             if(typeOfUser == 1){
                 handleCustomer();
             }
+            else if(typeOfUser == 2) {
+            	handlerEmployee();
+            }
+            else if(typeOfUser == 3) {
+            	handlerAdmin();
+            }
         	
         }catch(Exception e) {
         	System.out.println(e);
@@ -34,7 +41,7 @@ public class MainApplication {
         boolean isLogIn =false;
         int typeOfUser = 0;
         while(!isLogIn){
-            System.out.println("Are you a employee or customer?");
+            System.out.println("Are you an employee, customer or admin?");
             String username = scanner.nextLine();
 
             if(username.equals(CUSTOMER_USERNAME) ){
@@ -46,20 +53,18 @@ public class MainApplication {
                 typeOfUser = 2;
                 isLogIn = true;
             }
-
+            else if(username.equals(ADMIN_USERNAME) ){
+                typeOfUser = 3;
+                isLogIn = true;
+            }
             else{
-                System.out.println("Please enter employee or customer");
+                System.out.println("Please enter employee, customer or admin");
             }
         }
         return typeOfUser;
-
-
     }
     
-    public static void handleCustomer() throws InterruptedException {
-    	ConnectionDB connection = new ConnectionDB();
-    	// Ask the user for its customer id
-    	System.out.println("Which customer are you (choose a valid id)"); 
+    private static String askUserForCustomerId(ConnectionDB connection){
     	ArrayList<String> customers;
     	do{
     		try {
@@ -68,21 +73,23 @@ public class MainApplication {
         	}
         	catch(Exception e) {
         		System.out.println(e);
-        		Thread.sleep(5000);
         	}
+    		
+    		try {
+    			Thread.sleep(5000);
+    		}
+    		catch(InterruptedException e) {
+    			System.out.println(e);
+    		}
     	}
     	while(true);
-    	
-    	
-    	
     	// List all of the customers
     	for(String cu : customers) {
     		System.out.println(cu);
     	}
-    	
+    	System.out.println("Which customer are you (choose a valid id)"); 
     	//This store the custId for creating booking later
     	String custId;
-    	
     	do
         { 
     		// This ask the user for its customer id
@@ -101,15 +108,41 @@ public class MainApplication {
         }
         while (true);
     	
-    	ArrayList<String> hotel_brands = connection.getHotelBrand();
+    	return custId;
+    }
+    
+    private static String askUserForHotelBrand(ConnectionDB connection) {
+    	
+    	
+    	
+    	ArrayList<String> hotel_brands;
+    	do{
+    		try {
+    			hotel_brands = connection.getHotelBrand();
+        		break;
+        	}
+        	catch(Exception e) {
+        		System.out.println(e);
+        		
+        	}
+    		
+    		try {
+    			Thread.sleep(5000);
+    		}
+    		catch(InterruptedException e) {
+    			System.out.println(e);
+    		}
+    	}
+    	while (true);
+    	
     	// This let you choose the hotel brand you want to book
         System.out.print("Choose which hotel brand you want to book in ");
     	for(int i =0; i < hotel_brands.size(); i++) {
-        	System.out.print(hotel_brands.get(i)+" ("+i+")"+", ");
+        	System.out.print("{"+hotel_brands.get(i)+" ("+i+")"+"} ");
         }
-    
-        System.out.print(": ");
-        // This keep the index of the Hotel Brand 
+    	System.out.print("\n");
+    	
+    	// This keep the index of the Hotel Brand 
         int selectedInt;
         
         do
@@ -130,8 +163,32 @@ public class MainApplication {
         }
         while (true);
         
-        ArrayList<HotelChain> hotel_chains = connection.getHotelChain(hotel_brands.get(selectedInt));
-        
+        return hotel_brands.get(selectedInt);
+    	
+    }
+    
+    private static String askUserForHotelChain(ConnectionDB connection, String hotelBrandName) {
+    	
+    	ArrayList<HotelChain> hotel_chains;
+    	
+    	do{
+    		try {
+    			 hotel_chains = connection.getHotelChain(hotelBrandName);
+        		break;
+        	}
+        	catch(Exception e) {
+        		System.out.println(e);
+        	}
+    		
+    		try {
+    			Thread.sleep(5000);
+    		}
+    		catch(InterruptedException e) {
+    			System.out.println(e);
+    		}
+    	}
+    	while(true);
+    	
         // Let the user select the hotel chain he want to book
         System.out.println("Choose which hotel you want to book (choose a valid hotel id)");
         for(HotelChain chain: hotel_chains) {
@@ -158,8 +215,13 @@ public class MainApplication {
             }
         }
         while (true);
-        
-        //Let the use choose a end date for there booking
+    	
+        return selectedHotelId;
+    }
+    
+    private static String askUserForStartDate() {
+    	
+    	//Let the use choose a end date for there booking
         System.out.println("Choose the start date of your booking (yyyy-mm-dd)");
         String startDate;
         
@@ -187,8 +249,12 @@ public class MainApplication {
         }
         while (true);
         
-        
-        //Let the use choose a start date for there booking
+        return startDate;
+    	
+    }
+    
+    private static String askUserForEndDate() {
+    	//Let the use choose a start date for there booking
         System.out.println("Choose the end date of your booking (yyyy-mm-dd)");
         String endDate;
         
@@ -211,6 +277,57 @@ public class MainApplication {
             }
         }
         while (true);
+        return endDate;
+    }
+    
+    private static boolean askUserForPriorBooking() {
+    	
+    	System.out.println("Does the customer have a prior booking?");
+        
+        boolean customerHasBooking;
+        String userPriorBookingInput;
+        
+        do
+        { 
+            try {
+            	userPriorBookingInput = scanner.nextLine();
+            	
+            	//Make sure the entry is correct
+            	if("y".equals(userPriorBookingInput.toLowerCase())|| "yes".equals(userPriorBookingInput.toLowerCase())) {
+            		customerHasBooking = true;
+            	}
+            	else if("n".equals(userPriorBookingInput.toLowerCase()) || "no".equals(userPriorBookingInput.toLowerCase())){
+            		customerHasBooking = false;
+            	}
+            	else {
+            		throw new Exception();
+            	}
+                break;
+            }
+            catch (Exception e)
+            {
+                System.out.println("Please enter yes or no");
+            }
+        }
+        while (true);
+    	return customerHasBooking;
+    }
+    
+    
+    public static void handleCustomer() throws InterruptedException {
+    	ConnectionDB connection = new ConnectionDB();
+    	// Ask the user for its customer id
+    	
+    	String custId = askUserForCustomerId(connection);
+    	
+    	String hotelBrandName = askUserForHotelBrand(connection);
+    
+    	String selectedHotelId = askUserForHotelChain(connection, hotelBrandName);
+        
+        String startDate = askUserForStartDate();
+        
+        String endDate = askUserForEndDate();
+        
         
         // Query all the available rooms for the hotelId and start and end date
         ArrayList<Room> availableRooms = connection.getRoomByHotelAndDate(selectedHotelId, startDate,endDate );
@@ -218,7 +335,7 @@ public class MainApplication {
         System.out.println("Choose which room you want to book (choose a valid room id)");
         ArrayList<Integer> availableRoomId = new ArrayList<Integer>();
         
-        //Print all the room available and store there ids in an array list to validate id later
+        //Print all the rooms available and store their id in an array list to validate id later
         for(Room room: availableRooms) {
         	availableRoomId.add(Integer.parseInt(room.getRoomId()));
         	System.out.println(room);
@@ -259,12 +376,39 @@ public class MainApplication {
         
         //Display if the insert worked or not
         if(bookingCreated) {
-        	System.out.println("A booking has been created for room "+ selectedRoomId +" in hotel "+selectedHotelId +" from " + startDate + " to "+ endDate + " for " + roomPrice);
+        	System.out.println("A booking has been created for room "+ selectedRoomId +" in hotel "+selectedHotelId +" from " + startDate + " to "+ endDate + " for " + roomPrice+"/day");
         }
         else {
         	System.out.println("The booking could not be created please try later.");
         }
         
+    }
+    
+    
+    
+    
+    public static void handlerEmployee() {
+    	ConnectionDB connection = new ConnectionDB();
+    	
+    	String hotelBrandName = askUserForHotelBrand(connection);
+    	
+    	String hotelChainId = askUserForHotelChain(connection,hotelBrandName);
+        
+        boolean customerHasBooking = askUserForPriorBooking();
+        
+        //If the customer has booking we need his customer if
+        if(customerHasBooking) {
+        	
+        }
+        else {
+        	
+        }
+        
+    }
+    
+    
+    public static void handlerAdmin() {
+    	
     }
 
 }
