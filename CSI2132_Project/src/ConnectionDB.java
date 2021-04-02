@@ -14,11 +14,19 @@ public class ConnectionDB {
     ResultSet rs = null;
     Statement st = null;
     String sql;
+    
+    String username;
+    String password;
 
 	public static void main(String[] args) {
 		
 		
 		
+	}
+	
+	public ConnectionDB(String username, String password) {
+		this.username = username;
+		this.password = password;
 	}
 	
 	//Create a connection with the database
@@ -27,7 +35,7 @@ public class ConnectionDB {
 		try {
 			
 			Class.forName("org.postgresql.Driver");
-			db = DriverManager.getConnection("jdbc:postgresql://web0.eecs.uottawa.ca:15432/group_b07_g08","adegr091","Jtx5y2gd**");
+			db = DriverManager.getConnection("jdbc:postgresql://web0.eecs.uottawa.ca:15432/group_b07_g08",username,password);
 			
 			if(db!=null) {
 				System.out.println("Connection work");
@@ -94,7 +102,7 @@ public class ConnectionDB {
 		ArrayList<HotelChain> hotel_chain = new ArrayList<HotelChain>();
 		
         try{
-        	String query ="select hotel_id,star_category,street_number,street_name,city,state_province,phone_number from hotel_chain where brand_name=\'"+hotelBrand+"\' order by hotel_id" ;
+        	String query ="select hotel_id,star_category,street_number,street_name,city,state_province,phone_number from hotel_chain where brand_name='"+hotelBrand+"' order by hotel_id" ;
        
             ps = db.prepareStatement(query);
             	               
@@ -115,10 +123,10 @@ public class ConnectionDB {
 	
 	
 	//Return all customers cust_id, first_name and last_name
-	public ArrayList<String> getCustomer(){
+	public ArrayList<Customer> getCustomer(){
 		getConnection();
 		
-		ArrayList<String> customers = new ArrayList<String>();
+		ArrayList<Customer> customers = new ArrayList<Customer>();
 		
         try{
         	String query ="select customer_id,first_name,last_name from customer order by customer_id";
@@ -129,7 +137,7 @@ public class ConnectionDB {
 
             while(rs.next()) {
 				Customer c = new Customer(rs.getString(1),rs.getString(2),rs.getString(3));
-				customers.add(c.toString());
+				customers.add(c);
 			}
             
         }catch(SQLException e){
@@ -138,6 +146,83 @@ public class ConnectionDB {
         	closeDB();
         }
 		return customers;
+	}
+	
+	//Return all staffs cust_id, first_name and last_name
+	public ArrayList<Staff> getStaff(){
+		getConnection();
+		
+		ArrayList<Staff> staff = new ArrayList<Staff>();
+		
+        try{
+        	String query ="select staff_id,first_name,last_name from staff order by staff_id";
+       
+            ps = db.prepareStatement(query);
+            	               
+            rs = ps.executeQuery();
+
+            while(rs.next()) {
+				Staff s = new Staff(rs.getString(1),rs.getString(2),rs.getString(3));
+				staff.add(s);
+			}
+            
+        }catch(SQLException e){
+            e.printStackTrace();
+        }finally {
+        	closeDB();
+        }
+		return staff;
+	}
+		
+		
+	public ArrayList<HotelChain> getHotelChain(){
+		getConnection();
+		
+		ArrayList<HotelChain> hotelChain = new ArrayList<HotelChain>();
+		
+        try{
+        	String query ="select hotel_id , star_category, street_number, street_name, city, state_province, phone_number from hotel_chain order by hotel_id";
+       
+            ps = db.prepareStatement(query);
+            	               
+            rs = ps.executeQuery();
+
+            while(rs.next()) {
+				HotelChain hc = new HotelChain(rs.getString(1),rs.getString(2),rs.getString(3),rs.getString(4),rs.getString(5),rs.getString(6),rs.getString(7));
+				hotelChain.add(hc);
+			}
+            
+        }catch(SQLException e){
+            e.printStackTrace();
+        }finally {
+        	closeDB();
+        }
+		return hotelChain;
+	}
+	
+	public ArrayList<Room> getRoom(){
+		getConnection();
+		
+		ArrayList<Room> room = new ArrayList<Room>();
+		
+        try{
+        	String query ="select room_id, hotel_id, price, room_capacity, is_extendable, view from room order by room_id";
+       
+            ps = db.prepareStatement(query);
+            	               
+            rs = ps.executeQuery();
+
+            while(rs.next()) {
+				Room r = new Room(rs.getString(1),rs.getString(2),rs.getString(3),rs.getString(4),rs.getString(5),rs.getString(6));
+				room.add(r);
+			}
+            
+        }catch(SQLException e){
+            e.printStackTrace();
+        }finally {
+        	closeDB();
+        }
+		return room;
 	}
 	
 	//Get all room in the hotel that does not have a reservation between startDate and endDate
@@ -149,7 +234,7 @@ public class ConnectionDB {
 		ArrayList<Room> rooms = new ArrayList<Room>();
 		
         try{
-        	String query ="select * from room where hotel_id = " + hotelId + " and room_id not in (select room_id from room_booking where '"+startDate+"' between start_date and end_date or '"+endDate+"' between start_date and end_date)";
+        	String query ="select * from room where hotel_id = " + hotelId + " and room_id not in (select room_id from room_booking where '"+startDate+"' between start_date and end_date or '"+endDate+"' between start_date and end_date)and room_id not in (select room_id from room_renting where '"+startDate+"' between start_date and end_date or '"+endDate+"' between start_date and end_date)";
        
             ps = db.prepareStatement(query);
             	               
@@ -296,7 +381,7 @@ public class ConnectionDB {
 	
 	
 	//insert into customers
-	public boolean insertCustomers(String customer_id, String first_name, String middle_name, String last_name, String street_number, String street_name, String city, String state_province, String country, String postal_code, String sin, String date_of_birth, String phone) {
+	public boolean insertCustomer(String customer_id, String first_name, String middle_name, String last_name, String street_number, String street_name, String city, String state_province, String country, String postal_code, String sin, String date_of_birth, String phone) {
 		getConnection();
 		
 		boolean worked = false;
@@ -324,7 +409,7 @@ public class ConnectionDB {
 		
 		try {
 			String salaryNoDollarsSign = salary.substring(1,salary.length()-1);
-			String query = "INSERT INTO public.staff(staff_id,first_name,middle_name,last_name,street_number,street_name,city,state_province,country,postal_code,sin,salary,employee_job,hotel_id) VALUES ("+staff_id + ", '" + first_name + "' , '" + middle_name + "' , '" + last_name + "' , " + street_number + ", '" + street_name + "' , '" + city + "' , '" + state_province + "' , '" + country + "' , '" + postal_code + "' , " + sin + " , " + salaryNoDollarsSign + " , '"+employee_job +" , " + hotel_id + ");";
+			String query = "INSERT INTO public.staff(staff_id,first_name,middle_name,last_name,street_number,street_name,city,state_province,country,postal_code,sin,salary,employee_job,hotel_id) VALUES ("+staff_id + ", '" + first_name + "' , '" + middle_name + "' , '" + last_name + "' , " + street_number + ", '" + street_name + "' , '" + city + "' , '" + state_province + "' , '" + country + "' , '" + postal_code + "' , " + sin + " , " + salaryNoDollarsSign + " , '"+employee_job +"' , " + hotel_id + ");";
 		st = db.createStatement();
 		st.execute(query);
 		worked = true;
@@ -448,7 +533,7 @@ public class ConnectionDB {
 		boolean worked = false;
 		
 		try {
-			String query = "DELETE FROM public.room_id WHERE room_id =" + room_id;
+			String query = "DELETE FROM public.room WHERE room_id =" + room_id;
 		st = db.createStatement();
 		st.execute(query);
 		worked = true;

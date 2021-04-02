@@ -13,27 +13,54 @@ public class MainApplication {
     
     private static Scanner scanner = new Scanner(System.in);
     
+    private static String DB_USERNAME;
+    private static String DB_PASSWORD;
+    
     //TODO: add all customers and choose which one you are
     public static void main(String[] args) {
+    	boolean badCredential;
+    	do {
+    		System.out.println("Please enter your postgres username");
+        	DB_USERNAME = scanner.nextLine();
+        	System.out.println("Please enter your postgres password");
+        	DB_PASSWORD = scanner.nextLine();
+        	ConnectionDB testConnection = new ConnectionDB(DB_USERNAME,DB_PASSWORD);
+        	try {
+        		testConnection.getConnection();
+        		testConnection.closeDB();
+        		badCredential = false;
+        	}
+        	catch(Exception e) {
+        		System.out.println(e);
+        		testConnection.closeDB();
+        		badCredential = true;
+        	}
+    	}while(badCredential);
     	
-        try {
-        	int typeOfUser = getCredential();
-            System.out.println(typeOfUser);
-
-            //if user is a customer
-            if(typeOfUser == 1){
-                handleCustomer();
-            }
-            else if(typeOfUser == 2) {
-            	handlerEmployee();
-            }
-            else if(typeOfUser == 3) {
-            	handlerAdmin();
-            }
-        	
-        }catch(Exception e) {
-        	System.out.println(e);
-        }
+    	boolean notDone = false;
+    	do {
+    		
+	        try {
+	        	int typeOfUser = getCredential();
+	            System.out.println(typeOfUser);
+	
+	            //if user is a customer
+	            if(typeOfUser == 1){
+	                handleCustomer();
+	            }
+	            else if(typeOfUser == 2) {
+	            	handlerEmployee();
+	            }
+	            else if(typeOfUser == 3) {
+	            	handlerAdmin();
+	            }
+	        	
+	        }catch(Exception e) {
+	        	System.out.println(e);
+	        }        
+	        notDone = askUserIfDone();
+      
+        }while(notDone);
     }
 
     //Ask the user if he is an employee or a customer
@@ -57,15 +84,12 @@ public class MainApplication {
                 typeOfUser = 3;
                 isLogIn = true;
             }
-            else{
-                System.out.println("Please enter employee, customer or admin");
-            }
         }
         return typeOfUser;
     }
     
     private static String askUserForCustomerId(ConnectionDB connection){
-    	ArrayList<String> customers;
+    	ArrayList<Customer> customers;
     	do{
     		try {
         		customers = connection.getCustomer();
@@ -79,17 +103,15 @@ public class MainApplication {
 					e1.printStackTrace();
 				}
         	}
-    		
-
-    			
-    		
     	}
     	while(true);
+    	ArrayList<String> availableCustomerId = new ArrayList<String>();
     	// List all of the customers
-    	for(String cu : customers) {
+    	for(Customer cu : customers) {
     		System.out.println(cu);
+    		availableCustomerId.add(cu.getCustomerId());
     	}
-    	System.out.println("Which customer are you (choose a valid id)"); 
+    	System.out.println("Choose a customer (choose a valid id)"); 
     	//This store the custId for creating booking later
     	String custId;
     	do
@@ -97,8 +119,7 @@ public class MainApplication {
     		// This ask the user for its customer id
             try {
             	custId = scanner.nextLine();
-            	int custIdInt = Integer.parseInt(custId);
-            	if(custIdInt<1 || custIdInt>customers.size()) {
+            	if(!availableCustomerId.contains(custId)) {
             		throw new Exception();
             	}
                 break;
@@ -111,6 +132,150 @@ public class MainApplication {
         while (true);
     	
     	return custId;
+    }
+    
+    private static String askUserForStaffId(ConnectionDB connection){
+    	ArrayList<Staff> staff;
+    	do{
+    		try {
+        		staff = connection.getStaff();
+        		break;
+        	}
+        	catch(Exception e) {
+        		System.out.println(e);
+        		try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+        	}
+    	}
+    	while(true);
+    	
+    	ArrayList<String> availableStaffId = new ArrayList<String>();
+    	// List all of the customers
+    	for(Staff s : staff) {
+    		System.out.println(s);
+    		availableStaffId.add(s.getStaffId());
+    	}
+    	System.out.println("Choose the staff (choose a valid id)"); 
+    	//This store the custId for creating booking later
+    	String staffId;
+    	do
+        { 
+    		// This ask the user for its customer id
+            try {
+            	staffId = scanner.nextLine();
+            	
+            	if(!availableStaffId.contains(staffId)) {
+            		throw new Exception();
+            	}
+                break;
+            }
+            catch (Exception e)
+            {
+                System.out.println("Please enter a valid staff id");
+            }
+        }
+        while (true);
+    	
+    	return staffId;
+    }
+    
+    private static String askUserForHotelChainId(ConnectionDB connection){
+    	ArrayList<HotelChain> hotelChain;
+    	do{
+    		try {
+    			hotelChain = connection.getHotelChain();
+        		break;
+        	}
+        	catch(Exception e) {
+        		System.out.println(e);
+        		try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+        	}
+    	}
+    	while(true);
+    	
+    	ArrayList<String> availableHotelChainId = new ArrayList<String>();
+    	// List all of the customers
+    	for(HotelChain hc : hotelChain) {
+    		System.out.println(hc);
+    		availableHotelChainId.add(hc.getHotelId());
+    	}
+    	System.out.println("Choose the hotel chain (choose a valid id)"); 
+    	//This store the custId for creating booking later
+    	String hotelId;
+    	do
+        { 
+    		// This ask the user for its customer id
+            try {
+            	hotelId = scanner.nextLine();
+            	
+            	if(!availableHotelChainId.contains(hotelId)) {
+            		throw new Exception();
+            	}
+                break;
+            }
+            catch (Exception e)
+            {
+                System.out.println("Please enter a valid hotel chain id");
+            }
+        }
+        while (true);
+    	
+    	return hotelId;
+    }
+    
+    private static String askUserForRoomId(ConnectionDB connection){
+    	ArrayList<Room> room;
+    	do{
+    		try {
+    			room = connection.getRoom();
+        		break;
+        	}
+        	catch(Exception e) {
+        		System.out.println(e);
+        		try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+        	}
+    	}
+    	while(true);
+    	
+    	ArrayList<String> availableRoomId = new ArrayList<String>();
+    	// List all of the customers
+    	for(Room r : room) {
+    		System.out.println(r);
+    		availableRoomId.add(r.getRoomId());
+    	}
+    	System.out.println("Choose the room (choose a valid id)"); 
+    	//This store the custId for creating booking later
+    	String roomId;
+    	do
+        { 
+    		// This ask the user for its customer id
+            try {
+            	roomId = scanner.nextLine();
+            	
+            	if(!availableRoomId.contains(roomId)) {
+            		throw new Exception();
+            	}
+                break;
+            }
+            catch (Exception e)
+            {
+                System.out.println("Please enter a valid room id");
+            }
+        }
+        while (true);
+    	
+    	return roomId;
     }
     
     private static String askUserForHotelBrand(ConnectionDB connection) {
@@ -362,6 +527,95 @@ public class MainApplication {
     	return customerHasBooking;
     }
     
+    private static boolean askUserIfDone() {
+    	
+    	System.out.println("Do you want to do more operation on the database (yes or no)?");
+        
+        boolean adminWantToContinue;
+        String adminWantToContinueInput;
+        
+        do
+        { 
+            try {
+            	adminWantToContinueInput = scanner.nextLine();
+            	
+            	//Make sure the entry is correct
+            	if("y".equals(adminWantToContinueInput.toLowerCase())|| "yes".equals(adminWantToContinueInput.toLowerCase())) {
+            		adminWantToContinue = true;
+            	}
+            	else if("n".equals(adminWantToContinueInput.toLowerCase()) || "no".equals(adminWantToContinueInput.toLowerCase())){
+            		adminWantToContinue = false;
+            	}
+            	else {
+            		throw new Exception();
+            	}
+                break;
+            }
+            catch (Exception e)
+            {
+                System.out.println("Please enter yes or no");
+            }
+        }
+        while (true);
+    	return adminWantToContinue;
+    }
+    
+    private static String askUserForAdminOperation() {
+    	
+    	System.out.println("What operation do you want to do (insert, delete or update)?");
+        
+        String selectedOperation;
+        
+        do
+        { 
+            try {
+            	selectedOperation = scanner.nextLine();
+            	selectedOperation = selectedOperation.toLowerCase();
+            	
+            	//Make sure the entry is correct
+            	if(selectedOperation.equals("insert") || selectedOperation.equals("delete") || selectedOperation.equals("update")) {
+            		return selectedOperation;
+            	}
+            	else {
+            		throw new Exception();
+            	}
+            }
+            catch (Exception e)
+            {
+                System.out.println("Please enter insert, delete or update");
+            }
+        }
+        while (true);
+    }
+    
+    private static String askUserForTable() {
+    	
+    	System.out.println("What table do you want to modifie (customer, staff, hotel_chain or room)?");
+        
+        String selectedTable;
+        
+        do
+        { 
+            try {
+            	selectedTable = scanner.nextLine();
+            	selectedTable = selectedTable.toLowerCase();
+            	
+            	//Make sure the entry is correct
+            	if(selectedTable.equals("staff") || selectedTable.equals("hotel_chain") || selectedTable.equals("room") || selectedTable.equals("customer")) {
+            		return selectedTable;
+            	}
+            	else {
+            		throw new Exception();
+            	}
+            }
+            catch (Exception e)
+            {
+                System.out.println("Please enter customer, staff, hotel_chain or room");
+            }
+        }
+        while (true);
+    }
+    
     private static RoomBooking askUserForRoomBooking(ConnectionDB connection, String custId) {
     	ArrayList<RoomBooking> roomBookings;
     	do{
@@ -415,7 +669,7 @@ public class MainApplication {
     }
     
     public static void handleCustomer() throws InterruptedException {
-    	ConnectionDB connection = new ConnectionDB();
+    	ConnectionDB connection = new ConnectionDB(DB_USERNAME,DB_PASSWORD);
     	// Ask the user for its customer id
     	
     	String custId = askUserForCustomerId(connection);
@@ -451,7 +705,7 @@ public class MainApplication {
     
     public static void handlerEmployee() {
     	
-    	ConnectionDB connection = new ConnectionDB();
+    	ConnectionDB connection = new ConnectionDB(DB_USERNAME,DB_PASSWORD);
     	
     	String hotelBrandName = askUserForHotelBrand(connection);
     	
@@ -513,7 +767,176 @@ public class MainApplication {
     
     
     public static void handlerAdmin() {
-    	
+    	boolean adminWantToContinue;
+    	ConnectionDB connection = new ConnectionDB(DB_USERNAME,DB_PASSWORD);
+	    	
+    	do {
+	    	String selectedOperation = askUserForAdminOperation();
+	    	
+	    	String selectedTable = askUserForTable();
+	    	
+	    	boolean queryWorked = false;
+	    	
+	    	switch(selectedOperation) {
+	    	  case "insert":
+	    		  if(selectedTable.equals("customer")) {
+	    			  	queryWorked = askUserForCustomerInfo(connection);
+		    		}
+		    		else if(selectedTable.equals("room")) {
+		    			queryWorked = askUserForRoomInfo(connection);
+		    		}
+		    		else if(selectedTable.equals("hotel_chain")) {
+		    			queryWorked = askUserForHotelChainInfo(connection);
+		    		}
+		    		else {
+		    			queryWorked = askUserForStaffInfo(connection);
+		    		}
+	    	    break;
+	    	  case "delete":
+	    		if(selectedTable.equals("customer")) {
+	    			String custId = askUserForCustomerId(connection);
+	    			try {
+	    				queryWorked = connection.deleteCustomer(custId);
+	    			}
+	    			catch(Exception e) {
+	    				System.out.println(e);
+	    			}
+	    		}
+	    		else if(selectedTable.equals("room")) {
+	    			String roomId = askUserForRoomId(connection);
+	    			try {
+	    				queryWorked = connection.deleteRoom(roomId);
+	    			}
+	    			catch(Exception e) {
+	    				System.out.println(e);
+	    			}
+	    			
+	    		}
+	    		else if(selectedTable.equals("hotel_chain")) {
+	    			String hotelChainId = askUserForHotelChainId(connection);
+	    			try {
+	    				queryWorked = connection.deleteHotel(hotelChainId);
+	    			}
+	    			catch(Exception e) {
+	    				System.out.println(e);
+	    			}
+	    			
+	    		}
+	    		else {
+	    			String staffId = askUserForStaffId(connection);
+	    			try {
+	    				queryWorked = connection.deleteStaff(staffId);
+	    			}
+	    			catch(Exception e) {
+	    				System.out.println(e);
+	    			}
+	    			
+	    		}
+	    	    break;
+	    	  case "update":
+	      	    System.out.println("Please use PGAdmin for this feature");
+	      	    break;
+	    	}
+	    	
+	    	if(queryWorked) {
+	      		  System.out.println("Query "+selectedOperation+ " on table "+ selectedTable);
+	      	 }else {
+	      		  System.out.println("Query failed please try again later");
+	      	 }
+	    	adminWantToContinue = askUserIfDone();
+    	}while(adminWantToContinue);
     }
 
+	private static boolean askUserForStaffInfo(ConnectionDB connection) {
+		System.out.println("Please enter the attributes of staff as follow: staff_id,first_name,middle_name,last_name,street_number,street_name,city,state_province,country,postal_code,sin,salary,employee_job,hotel_id");
+		String[] staffAttribute;
+		boolean worked;
+		do
+        { 
+    		// This ask the user for its customer id
+            try {
+            	String allAttribiutes = scanner.nextLine();
+            	staffAttribute = allAttribiutes.split(",");
+            	worked =connection.insertStaff(staffAttribute[0],staffAttribute[1],staffAttribute[2],staffAttribute[3],staffAttribute[4],staffAttribute[5],staffAttribute[6],staffAttribute[7],staffAttribute[8],staffAttribute[9],staffAttribute[10],staffAttribute[11],staffAttribute[12],staffAttribute[13]);
+            	break;
+            }
+            catch (Exception e)
+            {
+            	System.out.println("Please enter valid attributes");
+                worked = false;
+            }
+        }
+        while (true);
+		return worked;
+	}
+
+	private static boolean askUserForHotelChainInfo(ConnectionDB connection) {
+		System.out.println("Please enter the attributes of hotel chain as follow: hotel_id,brand_name,star_category,street_number,street_name,city,state_province,country,postal_code,contact_email,phone_number,manager_id");
+		String[] hotelChainAttribute;
+		boolean worked;
+		do
+        { 
+    		// This ask the user for its customer id
+            try {
+            	String allAttribiutes = scanner.nextLine();
+            	hotelChainAttribute = allAttribiutes.split(",");
+            	worked =connection.insertHotel(hotelChainAttribute[0],hotelChainAttribute[1],hotelChainAttribute[2],hotelChainAttribute[3],hotelChainAttribute[4],hotelChainAttribute[5],hotelChainAttribute[6],hotelChainAttribute[7],hotelChainAttribute[8],hotelChainAttribute[9],hotelChainAttribute[10],hotelChainAttribute[11]);
+            	break;
+            }
+            catch (Exception e)
+            {
+            	System.out.println("Please enter valid attributes");
+                worked = false;
+            }
+        }
+        while (true);
+		return worked;
+	}
+
+	private static boolean askUserForRoomInfo(ConnectionDB connection) {
+		System.out.println("Please enter the attributes of hotel chain as follow: room_id,hotel_id,price,room_capacity,is_extendable,view");
+		String[] roomAttribute;
+		boolean worked;
+		do
+        { 
+    		// This ask the user for its customer id
+            try {
+            	String allAttribiutes = scanner.nextLine();
+            	roomAttribute = allAttribiutes.split(",");
+            	worked =connection.insertRoom(roomAttribute[0],roomAttribute[1],roomAttribute[2],roomAttribute[3],roomAttribute[4]);
+            	break;
+            }
+            catch (Exception e)
+            {
+            	System.out.println("Please enter valid attributes");
+                worked = false;
+            }
+        }
+        while (true);
+		return worked;
+	}
+
+	private static boolean askUserForCustomerInfo(ConnectionDB connection) {
+		System.out.println("Please enter the attributes of hotel chain as follow: customer_id,first_name,middle_name,last_name,street_number,street_name,city,state_province,country,postal_code,sin,date_of_birth,phone");
+		String[] customerAttribute;
+		boolean worked;
+		do
+        { 
+    		// This ask the user for its customer id
+            try {
+            	String allAttribiutes = scanner.nextLine();
+            	customerAttribute = allAttribiutes.split(",");
+            	worked =connection.insertCustomer(customerAttribute[0],customerAttribute[1],customerAttribute[2],customerAttribute[3],customerAttribute[4],customerAttribute[5],customerAttribute[6],customerAttribute[7],customerAttribute[8],customerAttribute[9],customerAttribute[10],customerAttribute[11],customerAttribute[12]);
+            	break;
+            }
+            catch (Exception e)
+            {
+                System.out.println("Please enter valid attributes");
+                worked = false;
+            }
+        }
+        while (true);
+		return worked;
+	}
+	
 }
